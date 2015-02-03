@@ -375,6 +375,9 @@ printTheArrayBlocking = function () {
  * Run this with the JavaScript console open, then move the mosue over the
  * window. Note that the window's mousemove callbacks are interleaved with
  * the prints.
+ *
+ * Also note how much longer it takes to run this compared to
+ * printTheArrayBlocking().
  */
 printTheArrayNonBlocking = function () {
   var printem = printThings(bigArray);
