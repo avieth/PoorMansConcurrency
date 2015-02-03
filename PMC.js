@@ -248,6 +248,47 @@ RoundRobin.prototype.runAsync = function (in_continuation) {
 };
 
 /**
+ * A strategy in which the queue is cleared in synchronous batches of a
+ * fixed size.
+ */
+RoundRobin.prototype.runBatchAsync = function (in_batchSize, in_continuation) {
+  var counter = 0;
+  return this.runFInitial(
+    function (in_continuation) {
+      counter += 1;
+      if (counter === in_batchSize) {
+        counter = 0;
+        setTimeout(in_continuation, 0);
+      } else {
+        in_continuation();
+      }
+    },
+    in_continuation
+  );
+};
+
+/**
+ * A strategy in which the queue is cleared synchronously until it has taken
+ * more than some time duration (in ms).
+ */
+RoundRobin.prototype.runTimedAsync = function (in_timeBound, in_continuation) {
+  var baseTime = window.performance.now();
+  var delta;
+  return this.runFInitial(
+    function (in_continuation) {
+      delta = window.performance.now() - baseTime;
+      if (delta > in_timeBound) {
+        setTimeout(in_continuation, 0);
+        baseTime = window.performance.now();
+      } else {
+        in_continuation();
+      }
+    },
+    in_continuation
+  );
+};
+
+/**
  * Run with yielding via requestAnimationFrame(_).
  */
 RoundRobin.prototype.runAnimation = function (in_continuation) {
