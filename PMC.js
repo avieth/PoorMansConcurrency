@@ -22,13 +22,7 @@
  * of type a. The continuation is there to make them composable.
  *
  * @param {function} in_routine - must accept a single argument: a continuation.
- *   Must call that continuation ONCE and ONLY ONCE in every evaluation
- *   path, no matter what! Failing to due this voids the warranty.
- *   The continuation must be called with one and only one positional
- *   parameter.
- *   It is helpful to pretend that JavaScript has static types, and to
- *   attribute a type to each C instance. That's the type of thing that will
- *   be given to the continuation.
+ *   Must return an Action.
  *
  * @constructor
  */
@@ -312,6 +306,17 @@ action = function (in_c) {
 };
 
 /**
+ * Produce a C from an arbitrary synchronous routine.
+ */
+atom = function (in_routine) {
+  return new C(function (in_continuation) {
+    return new Atom(function () {
+      return in_continuation(in_routine());
+    });
+  });
+};
+
+/**
  * Create a C which does nothing, but ignores its continuation and stops.
  */
 stop = function () {
@@ -351,9 +356,9 @@ parallel = function (in_c1, in_c2) {
  */
 
 var printThing = function (in_thing) {
-  return new C(function (in_continuation) {
+  return atom(function () {
     console.debug(in_thing);
-    return in_continuation({});
+    return {};
   });
 };
 
@@ -422,5 +427,5 @@ printTheArrayBlocking = function () {
  */
 printTheArrayNonBlocking = function () {
   var printem = printThings(bigArray);
-  RoundRobin.singleAction(action(printem)).runAsync();
+  RoundRobin.singleAction(action(printem)).runBatchAsync(5);
 };
